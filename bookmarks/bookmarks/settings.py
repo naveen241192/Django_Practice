@@ -186,3 +186,16 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'MHkJTbuqnJDE_ihCqIBMXVqM'
 ABSOLUTE_URL_OVERRIDES = {
     'auth.user': lambda u: reverse_lazy('user_detail', args=[u.username])
 }
+
+
+# Redis Server Configuration
+"""
+
+We are using Redis here for storing views (like no of persons viewed this image), 
+bcoz if we use update queries they would be very complex
+and decreases performance, hence we use redis to store Item Views.
+
+"""
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 0

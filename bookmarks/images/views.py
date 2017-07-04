@@ -9,6 +9,21 @@ from common.decorators import ajax_required
 from .forms import ImageCreateForm
 from .models import Image
 from actions.utils import create_action  # To create action to display activity stream (user likes or bookmarked image)
+import redis
+from django.conf import settings
+
+
+r = redis.StrictRedis(host=settings.REDIS_HOST,
+                      port=settings.REDIS_PORT,
+                      db=settings.REDIS_DB)
+
+"""
+
+We are using Redis here for storing views (like no of persons viewed this image), 
+bcoz if we use update queries they would be very complex
+and decreases performance, hence we use redis to store Item Views.
+
+"""
 
 
 @login_required
@@ -45,8 +60,13 @@ def image_create(request):
 
 def image_detail(request, id, slug):
     image = get_object_or_404(Image, id=id, slug=slug)
+    # increment total image views by 1
+    total_views = r.incr('image:{}:views'.format(image.id))  # incr increments the value of a key by 1.
+    # increment image ranking by 1
+    r.zincrby('image_ranking', image.id, 1) # sorted set for image ranking, stores the image id.
     return render(request, 'images/image/detail.html', {'section': 'images',
-                                                        'image': image})
+                                                        'image': image,
+                                                        'total_views':total_views})
 
 
 @ajax_required  # custom decorator, to allow only ajax requests.
@@ -105,3 +125,25 @@ def image_list(request):
     return render(request,
                   'images/image/list.html',
                    {'section': 'images', 'images': images})
+
+
+"""
+View to display the most viewed images.
+"""
+
+
+@login_required
+def image_ranking(request):
+    """get image ranking dictionary
+    zrange (obtains the elements in sorted set), accepts the lowest(0), highest rank(-1) as parameters.
+    desc=True to get element in descending score., and gets the first 10 elements.
+    """
+    image_ranking = r.zrange('image_ranking', 0, -1, desc=True)[:10]
+    image_ranking_ids = [int(id) for id in image_ranking]
+    # get most viewed images
+    most_viewed = list(Image.objects.filter(id__in=image_ranking_ids))
+    most_viewed.sort(key=lambda x: image_ranking_ids.index(x.id))
+    return render(request,
+                  'images/image/ranking.html',
+                  {'section': 'images',
+                   'most_viewed': most_viewed})
