@@ -10,6 +10,7 @@ Contents in Project Bookmarks:
 2)actions: application related to Actions performed by Users to siplay in Activity Feed.
 3)common: a folder containing common code like custom decorators which can be used across all the apps in project.
 4)images: application related to image bookmarking and storing in db.
+5)Used Redis (an in memory db) to store no of views on image and to rank the image. [Used Redis to avoid complex update queries for views, as it is in memoory db].
 
 
 
