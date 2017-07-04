@@ -1,0 +1,74 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link href="{% static "css/base.css" %}" rel="stylesheet">
+
+</head>
+<body>
+       <div id="header">
+        <span class="logo">Bookmarks</span>
+        {% if request.user.is_authenticated %}
+        <ul class="menu">
+        <!--section is a variable added in each view to differentiate, which section is active -->
+            <li {% if section == "dashboard" %}class="selected"{% endif %}><a href="{% url "dashboard" %}">My dashboard</a></li>
+            <li {% if section == "images" %}class="selected"{% endif %}><a href="{% url "images:list" %}">Images</a></li>
+            <li {% if section == "people" %}class="selected"{% endif %}><a href="{%url "user_list" %}">People</a></li>
+        </ul>
+        {% endif %}
+
+        <span class="user">
+        {% if request.user.is_authenticated %}
+            Hello {{ request.user.first_name }}, <a href="{% url "logout" %}">Logout</a>
+        {% else %}
+            <a href="{% url "login" %}">Log-in</a>
+        {% endif %}
+        </span>
+    </div>
+
+       <!-- to display any success, warning, info or debug messages. -->
+ {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">
+                    {{ message|safe }}
+                    <a href="#" class="close">×</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div id="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+       <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+       <script src=" http://cdn.jsdelivr.net/jquery.cookie/1.4.1/jquery.cookie.min.js "></script>
+       <script>
+         var csrftoken = $.cookie('csrftoken');
+        function csrfSafeMethod(method) {
+            // these HTTP safe methods do not require CSRF protection
+            return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+        }
+        /* we setup JQuery ajax requests using, ajaxSetup, before each ajax request request is performed,
+           we check if methods are not safe (POST, PUT) and current request is not cross domain request.
+           if request is not safe method, we add X-CSRFToken to header, from cookie.
+           This setup applies to all ajax requests performedwith JQuery. and this csrftoken applies to all non safe method requests.
+         */
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrftoken);
+                }
+            }
+        });
+$(document).ready(function(){
+{% block domready %}  //domready is a django template block, in which templates which extend base template can add specific javascript code.
+{% endblock %}
+});
+</script>
+</body>
+
+</html>

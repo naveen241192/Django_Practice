@@ -1,0 +1,1 @@
+javascript:(function()%7B(function()%7Bif(window.myBookmarklet!%3D%3Dundefined)%7BmyBookmarklet()%3B%7Delse%7Bdocument.body.appendChild(document.createElement('script')).src%3D'http%3A%2F%2F127.0.0.1%3A8000%2Fstatic%2Fjs%2Fbookmarklet.js%3Fr%3D'%2BMath.floor(Math.random()*99999999999999999999)%3B%7D%7D)()%7D)()

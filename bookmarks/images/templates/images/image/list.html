@@ -1,0 +1,37 @@
+<!-- displays the images in standard pagination -->
+
+{% extends "base.html" %}
+
+{% block title %}Images bookmarked{% endblock %}
+
+{% block content %}
+    <h1>Images bookmarked</h1>
+    <div id="image-list">
+        {% include "images/image/list_ajax.html" %}
+    </div>
+{% endblock %}
+
+{% block domready %}
+    var page = 1;
+    var empty_page = false;    <!-- checks if empty page -->
+    var block_request = false; <!-- prevents sending an additional request, when an AJAX request is in progress.-->
+
+    $(window).scroll(function() {
+        var margin = $(document).height() - $(window).height() - 200; <!-- (-200) bcoz we make an ajax request when user is 200 px away from reaching end.-->
+        if  ($(window).scrollTop() > margin && empty_page == false && block_request == false) {
+		    block_request = true;
+		    page += 1;
+     <!-- data is HTML response-->
+		    $.get('?page=' + page, function(data) {
+		        if(data == '')
+		        {
+		            empty_page = true; <!-- to prevent additional AJAX requests. -->
+		        }
+		        else {
+                    block_request = false;
+                    $('#image-list').append(data);
+    	        }
+            });
+    	}
+    });
+{% endblock %}
